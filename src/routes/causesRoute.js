@@ -5,6 +5,8 @@ const router = express.Router();
 
 
 router.post("/add_cause", causesController.addCause);
+router.get("/causes", causesController.getAllCauses);
+
 
 
 

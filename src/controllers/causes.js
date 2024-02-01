@@ -30,7 +30,22 @@ class CausesController {
             return res.status(500).json({ success: false, error: 'Internal Server Error' });
         }
     };
+
+    static async updateCauseProgress(req, res) {
+        try {
+            const updatedCause = await causesModel.updateCauseProgress(req.body);
+
+            if (updatedCause) {
+                res.status(200).json({ updatedCause });
+            } else {
+                res.status(404).json({ success: false, message: 'Cause not found.' });
+            }
+        } catch (error) {
+            console.error('Error updating cause progress:', error);
+            res.status(500).json({ success: false, message: 'An error occurred while updating cause progress.' });
+        }
+    }
+
 }
 
 module.exports = CausesController;
-

@@ -45,6 +45,46 @@ class CausesModel {
             }
         }
     }
+
+
+    static async updateCauseProgress(update) {
+        let client;
+        try {
+            client = await pool.connect();
+            const { amount, cause_id } = update;
+
+            const result = await client.query('SELECT * FROM cause WHERE cause_id = $1', [cause_id]);
+            const existingCauseData = result.rows[0];
+
+            const newAmountRaised = parseInt(existingCauseData.amount_raised, 10) + parseInt(amount, 10);
+            let newProgress = 0;
+            let completed = existingCauseData.completed || false;
+
+            if (newAmountRaised >= existingCauseData.target) {
+                newProgress = 100;
+                completed = true;
+            } else {
+                newProgress = Math.floor((newAmountRaised / existingCauseData.target) * 100);
+            }
+
+            const query = `UPDATE cause SET amount_raised = $1, progress = $2, completed = $3 WHERE cause_id = $4`;
+            const values = [newAmountRaised, newProgress, completed, cause_id];
+
+            await client.query(query, values);
+
+
+            const updatedResult = await client.query('SELECT * FROM cause WHERE cause_id = $1', [cause_id]);
+            const updatedCauseData = updatedResult.rows[0];
+
+            return { success: true, message: "Cause progress updated successfully.", updatedCauseData };
+        } catch (error) {
+            console.error('Error updating cause progress:', error);
+            return { success: false, message: "Failed to update cause progress." };
+        } finally {
+            if (client) client.release();
+        }
+    }
+
 }
 
 
